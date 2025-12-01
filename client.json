@@ -1,0 +1,55 @@
+{
+    "log": {
+        "loglevel": "warning"
+    },
+    "inbounds": [
+        {
+            "port": 10808,
+            "listen": "127.0.0.1",
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "udp": true
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "proxy",
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "ip_ru_server",
+                        "port": 443,
+                        "users": [
+                            {
+                                "id": "",
+                                "flow": "",
+                                "encryption": "none"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "xhttp",
+                "xhttpSettings": {
+                    "path": "/api/v1/users"
+                },
+                "security": "reality",
+                "realitySettings": {
+                    "serverName": "travel.yandex.ru",
+                    "publicKey": "",
+                    "shortId": "",
+                    "spiderX": "/users",
+                    "fingerprint": "randomized"
+                }
+            }
+        },
+        {
+            "tag": "direct",
+            "protocol": "freedom"
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "dns": {
+    "servers": [
+      "tcp+local://1.1.1.1"
+    ]
+  },
+  "reverse": {
+    "bridges": [
+      {
+        "tag": "bridge",
+        "domain": "reverse.idbduywebcwe9ocvnew.com"
+      }
+    ]
+  },
+  "outbounds": [
+    {
+      "tag": "outgoing",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "ip_ru_server",
+            "port": 443,
+            "users": [
+              {
+                "id": "",
+                "flow": "",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "/api/v1/users"
+        },
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "travel.yandex.ru",
+          "publicKey": "",
+          "shortId": "",
+          "spiderX": "/users",
+          "fingerprint": "randomized"
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "bridge"
+        ],
+        "domain": [
+          "full:reverse.idbduywebcwe9ocvnew.com"
+        ],
+        "outboundTag": "outgoing"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "bridge"
+        ],
+        "outboundTag": "direct"
+      }
+    ]
+  }
+}
