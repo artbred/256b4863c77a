@@ -1,0 +1,121 @@
+{
+    "log": {
+        "loglevel": "none"
+    },
+    "fakedns": {
+        "ipPool": "198.18.0.0/15",
+        "poolSize": 65535
+    },
+    "dns": {
+        "servers": [
+            "fakedns"
+        ]
+    },
+    "inbounds": [
+        {
+            "tag": "socks",
+            "listen": "127.0.0.1",
+            "port": 10808,
+            "protocol": "socks",
+            "settings": {
+                "udp": true,
+                "auth": "noauth"
+            }
+        },
+        {
+            "tag": "transparent",
+            "port": 12345,
+            "listen": "0.0.0.0",
+            "protocol": "dokodemo-door",
+            "settings": {
+                "network": "tcp,udp",
+                "followRedirect": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "fakedns",
+                    "http",
+                    "tls",
+                    "quic"
+                ],
+                "routeOnly": false
+            },
+            "streamSettings": {
+                "sockopt": {
+                    "tproxy": "tproxy"
+                }
+            }
+        },
+        {
+            "tag": "dns-in",
+            "port": 5353,
+            "listen": "0.0.0.0",
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "1.1.1.1",
+                "port": 53,
+                "network": "tcp,udp"
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "proxy",
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "",
+                        "port": 443,
+                        "users": [
+                            {
+                                "id": "",
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision-udp443"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "reality",
+                "realitySettings": {
+                    "serverName": "travel.yandex.ru",
+                    "show": false,
+                    "publicKey": ""
+                }
+            }
+        },
+        {
+            "tag": "dns-out",
+            "protocol": "dns"
+        },
+        {
+            "tag": "direct",
+            "protocol": "freedom"
+        }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "type": "field",
+                "inboundTag": [
+                    "dns-in"
+                ],
+                "outboundTag": "dns-out"
+            },
+            {
+                "type": "field",
+                "port": 53,
+                "outboundTag": "dns-out"
+            },
+            {
+                "type": "field",
+                "network": "tcp,udp",
+                "outboundTag": "proxy"
+            }
+        ]
+    }
+}

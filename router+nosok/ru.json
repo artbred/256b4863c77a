@@ -1,0 +1,141 @@
+{
+    "log": {
+        "loglevel": "none"
+    },
+    "dns": {
+        "tag": "DNS-PROXY",
+        "servers": [
+            {
+                "tag": "DNS-DIRECT",
+                "address": "77.88.8.8",
+                "domains": [
+                    "geosite:category-ru",
+                    "geosite:ru-available-only-inside"
+                ],
+                "expectIPs": [
+                    "geoip:ru"
+                ],
+                "skipFallback": true
+            },
+            {
+                "address": "1.1.1.1",
+                "expectIPs": [
+                    "geoip:!ru"
+                ],
+                "skipFallback": true
+            },
+            {
+                "address": "1.1.1.1",
+                "clientIp": "77.88.8.5",
+                "expectIPs": [
+                    "geoip:ru"
+                ],
+                "skipFallback": false
+            },
+            "1.1.1.1"
+        ]
+    },
+    "inbounds": [
+        {
+            "tag": "VLESS-PUBLIC-INBOUND",
+            "port": 443,
+            "listen": "0.0.0.0",
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "sniffing": {
+                "enabled": true,
+                "routeOnly": false,
+                "destOverride": [
+                    "http",
+                    "tls",
+                    "quic"
+                ]
+            },
+            "streamSettings": {
+                "network": "raw",
+                "security": "reality",
+                "realitySettings": {
+                    "show": false,
+                    "xver": 0,
+                    "target": "travel.yandex.ru:443",
+                    "shortIds": [
+                        ""
+                    ],
+                    "privateKey": "",
+                    "serverNames": [
+                        "travel.yandex.ru"
+                    ]
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "SS_OUTBOUND_TO_FREEDOM",
+            "protocol": "shadowsocks",
+            "settings": {
+                "servers": [
+                    {
+                        "port": 8888,
+                        "level": 0,
+                        "method": "chacha20-ietf-poly1305",
+                        "address": "",
+                        "password": ""
+                    }
+                ]
+            }
+        },
+        {
+            "tag": "DIRECT",
+            "protocol": "freedom"
+        },
+        {
+            "tag": "BLOCK",
+            "protocol": "blackhole"
+        }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "ip": [
+                    "geoip:private"
+                ],
+                "outboundTag": "BLOCK"
+            },
+            {
+                "domain": [
+                    "geosite:private"
+                ],
+                "outboundTag": "BLOCK"
+            },
+            {
+                "inboundTag": [
+                    "DNS-DIRECT"
+                ],
+                "outboundTag": "DIRECT"
+            },
+            {
+                "inboundTag": [
+                    "DNS-PROXY"
+                ],
+                "outboundTag": "SS_OUTBOUND_TO_FREEDOM"
+            },
+            {
+                "ip": [
+                    "geoip:ru"
+                ],
+                "outboundTag": "DIRECT"
+            },
+            {
+                "ip": [
+                    "geoip:!ru"
+                ],
+                "outboundTag": "SS_OUTBOUND_TO_FREEDOM"
+            }
+        ],
+        "domainStrategy": "IPIfNonMatch"
+    }
+}

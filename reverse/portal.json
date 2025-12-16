@@ -1,0 +1,147 @@
+{
+    "log": {
+        "loglevel": "warning"
+    },
+    "dns": {
+        "tag": "DNS-PROXY",
+        "servers": [
+            {
+                "tag": "DNS-DIRECT",
+                "address": "77.88.8.8",
+                "domains": [
+                    "geosite:category-ru",
+                    "geosite:ru-available-only-inside"
+                ],
+                "expectIPs": [
+                    "geoip:ru"
+                ],
+                "skipFallback": true
+            },
+            {
+                "address": "1.1.1.1",
+                "expectIPs": [
+                    "geoip:!ru"
+                ],
+                "skipFallback": true
+            },
+            {
+                "address": "1.1.1.1",
+                "clientIp": "77.88.8.8",
+                "expectIPs": [
+                    "geoip:ru"
+                ],
+                "skipFallback": false
+            },
+            "1.1.1.1"
+        ],
+        "clientIp": "external-ip"
+    },
+    "inbounds": [
+        {
+            "tag": "VLESS-IN",
+            "port": "443",
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "sniffing": {
+                "enabled": true,
+                "routeOnly": false,
+                "destOverride": [
+                    "tls",
+                    "http"
+                ]
+            },
+            "streamSettings": {
+                "network": "xhttp",
+                "security": "reality",
+                "xhttpSettings": {
+                    "path": "/api/v1/users"
+                },
+                "realitySettings": {
+                    "target": "travel.yandex.ru:443",
+                    "shortIds": [
+                        ""
+                    ],
+                    "privateKey": "",
+                    "serverNames": [
+                        "travel.yandex.ru"
+                    ]
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "PROXY",
+            "protocol": "freedom",
+            "proxySettings": {
+                "tag": "PORTAL"
+            }
+        },
+        {
+            "tag": "DIRECT",
+            "protocol": "freedom"
+        },
+        {
+            "tag": "BLOCK",
+            "protocol": "blackhole"
+        }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "domain": [
+                    "habr.com"
+                ],
+                "outboundTag": "PORTAL"
+            },
+            {
+                "domain": [
+                    "geosite:category-ads-all"
+                ],
+                "outboundTag": "BLOCK"
+            },
+            {
+                "inboundTag": [
+                    "DNS-DIRECT"
+                ],
+                "outboundTag": "DIRECT"
+            },
+            {
+                "inboundTag": [
+                    "DNS-PROXY"
+                ],
+                "outboundTag": "PORTAL"
+            },
+            {
+                "ip": [
+                    "geoip:ru"
+                ],
+                "outboundTag": "DIRECT"
+            },
+            {
+                "ip": [
+                    "geoip:!ru"
+                ],
+                "outboundTag": "PORTAL"
+            },
+            {
+                "user": [
+                    "username of the service account that connects to the server (freedom to portal)"
+                ],
+                "outboundTag": "PORTAL"
+            }
+        ],
+        "domainStrategy": "IPIfNonMatch"
+    },
+    "reverse": {
+        "portals": [
+            {
+                "tag": "PORTAL",
+                "domain": "reverse.idbduywebcwe9ocvnew.com"
+            }
+        ]
+    }
+}

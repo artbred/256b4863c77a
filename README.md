@@ -1,10 +1,8 @@
 ## XTLS configs
 
-[portal.json](portal.json) - install on ru server
-
-[bridge.json](bridge.json) - install on external server
-
-[client.json](portal.json) - use to connect to a ru server or use wireguard
+[portal.json](reverse/portal.json) - install on ru server
+[bridge.json](reverse/bridge.json) - install on external server
+[client.json](reverse/portal.json) - use to connect to a ru server or use wireguard
 
 ```
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u root
