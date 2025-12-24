@@ -1,0 +1,280 @@
+{
+    "log": {
+        "loglevel": "none",
+        "access": "/var/log/xray/access.log",
+        "error": "/var/log/xray/access.log"
+    },
+    "dns": {
+        "servers": [
+            {
+                "address": "1.1.1.1",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:google"
+                ]
+            },
+            {
+                "address": "8.8.8.8",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:google"
+                ],
+                "finalQuery": true
+            },
+            {
+                "tag": "dns-direct",
+                "address": "77.88.8.8",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:category-ru",
+                    "geosite:ru-available-only-inside"
+                ],
+                "expectIPs": [
+                    "geoip:ru"
+                ]
+            },
+            {
+                "tag": "dns-direct",
+                "address": "62.76.76.62",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:category-ru",
+                    "geosite:ru-available-only-inside"
+                ],
+                "expectIPs": [
+                    "geoip:ru"
+                ]
+            },
+            {
+                "address": "1.1.1.1",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:category-ru",
+                    "geosite:ru-available-only-inside"
+                ]
+            },
+            {
+                "address": "8.8.8.8",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:ru-available-only-inside",
+                    "geosite:category-ru"
+                ],
+                "finalQuery": true
+            },
+            {
+                "address": "1.1.1.1",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:ru-blocked"
+                ],
+                "expectIPs": [
+                    "geoip:!ru"
+                ]
+            },
+            {
+                "address": "8.8.8.8",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:ru-blocked"
+                ],
+                "expectIPs": [
+                    "geoip:!ru"
+                ]
+            },
+            {
+                "address": "8.8.8.8",
+                "clientIp": "77.88.8.1",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:ru-blocked"
+                ]
+            },
+            {
+                "address": "8.8.4.4",
+                "clientIp": "77.88.8.1",
+                "skipFallback": true,
+                "domains": [
+                    "geosite:ru-blocked"
+                ],
+                "finalQuery": true
+            },
+            {
+                "address": "8.8.8.8",
+                "clientIp": "77.88.8.1",
+                "expectIPs": [
+                    "geoip:ru"
+                ]
+            },
+            {
+                "address": "8.8.4.4",
+                "clientIp": "77.88.8.1",
+                "expectIPs": [
+                    "geoip:ru"
+                ]
+            },
+            "1.1.1.1",
+            "8.8.8.8"
+        ],
+        "tag": "dns-proxy",
+        "enableParallelQuery": true
+    },
+    "routing": {
+        "domainStrategy": "IPIfNonMatch",
+        "rules": [
+            {
+                "domain": [
+                    "geosite:category-ads"
+                ],
+                "outboundTag": "block"
+            },
+            {
+                "inboundTag": [
+                    "dns-direct"
+                ],
+                "outboundTag": "direct"
+            },
+            {
+                "inboundTag": [
+                    "dns-proxy"
+                ],
+                "outboundTag": "proxy"
+            },
+            {
+                "ip": [
+                    "geoip:ru"
+                ],
+                "outboundTag": "direct"
+            }
+        ]
+    },
+    "inbounds": [
+        {
+            "tag": "socks",
+            "port": 10808,
+            "listen": "127.0.0.1",
+            "protocol": "socks",
+            "settings": {
+                "udp": true,
+                "auth": "noauth"
+            },
+            "sniffing": {
+                "enabled": true,
+                "routeOnly": false,
+                "destOverride": [
+                    "http",
+                    "tls",
+                    "quic"
+                ]
+            }
+        },
+        {
+            "tag": "transparent",
+            "port": 12345,
+            "listen": "0.0.0.0",
+            "protocol": "dokodemo-door",
+            "settings": {
+                "network": "tcp,udp",
+                "followRedirect": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "fakedns",
+                    "http",
+                    "tls",
+                    "quic"
+                ],
+                "routeOnly": false
+            },
+            "streamSettings": {
+                "sockopt": {
+                    "tproxy": "tproxy"
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "proxy",
+            "protocol": "vless",
+            "targetStrategy": "UseIP",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "fronting domain",
+                        "port": 443,
+                        "users": [
+                            {
+                                "id": "",
+                                "encryption": "xray vlessenc - must be used, traffic is unencrypted on the cdn side",
+                                "flow": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "xhttp",
+                "xhttpSettings": {
+                    "path": "/secretpath",
+                    "host": "lalalal.mwscdn.ru or your domain that points to it using cname record",
+                    "extra": {
+                        "xPaddingBytes": "100-1000",
+                        "scMaxEachPostBytes": "1000000",
+                        "scMinPostsIntervalMs": "15-20",
+                        "xmux": {
+                            "maxConcurrency": 1,
+                            "cMaxReuseTimes": 0,
+                            "hMaxRequestTimes": 900,
+                            "hMaxReusableSecs": 3000,
+                            "hKeepAlivePeriod": 0
+                        },
+                        "downloadSettings": {
+                            "address": "another domain that directly points to your freedom vps address",
+                            "port": 443,
+                            "network": "xhttp",
+                            "security": "tls",
+                            "xhttpSettings": {
+                                "host": "another domain that directly points to your freedom vps address",
+                                "path": "/secretpath",
+                                "extra": {
+                                    "xPaddingBytes": "100-1000",
+                                    "xmux": {
+                                        "maxConnections": 1,
+                                        "cMaxReuseTimes": 0,
+                                        "hMaxRequestTimes": 900,
+                                        "hMaxReusableSecs": 3000,
+                                        "hKeepAlivePeriod": 0
+                                    }
+                                }
+                            },
+                            "tlsSettings": {
+                                "serverName": "servername from your ssl certificate",
+                                "fingeprrint": "randomized",
+                                "alpn": [
+                                    "h3"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "security": "tls",
+                "tlsSettings" : {
+                    "fingeprrint": "randomized",
+                    "alpn": [
+                        "h2", "h1"
+                    ]
+                }
+            }
+        },
+        {
+            "tag": "direct",
+            "protocol": "freedom"
+        },
+        {
+            "tag": "block",
+            "protocol": "blackhole"
+        }
+    ]
+}

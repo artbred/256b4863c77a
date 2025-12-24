@@ -1,0 +1,16 @@
+1. use yandex cloud cdn or use mws cdn
+2. create cdn, use your server ip as the source
+3. https://platform.censys.io/hosts/$ip (get ip by running "host yourvalue.mwscdn.ru")
+4. save domains to a list candidates_clean.txt
+5. find domains that allow fronting
+
+#!/bin/bash
+
+MY_HOST="cname or your cdn domain *.mwscdn.ru"
+
+while read domain; do
+    status=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 -H "Host: $MY_HOST" "https://$domain")
+    if [[ "$status" == "200" || "$status" == "404" ]]; then
+        echo "FOUND FRONT: $domain"
+    fi
+done < candidates_clean.txt

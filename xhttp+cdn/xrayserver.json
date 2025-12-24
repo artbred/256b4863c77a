@@ -1,0 +1,37 @@
+{
+    "log": {
+        "error": "/var/log/remnanode/access.log",
+        "access": "/var/log/remnanode/access.log",
+        "loglevel": "none"
+    },
+    "inbounds": [
+        {
+            "tag": "xhttp-tls",
+            "listen": "/dev/shm/xrxh.socket,0666",
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "xray vlessenc - must be used, traffic is unencrypted on the cdn side"
+            },
+            "streamSettings": {
+                "network": "xhttp",
+                "sockopt": {
+                    "acceptProxyProtocol": false
+                },
+                "xhttpSettings": {
+                    "path": "/secretpath"
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "direct",
+            "protocol": "freedom"
+        },
+        {
+            "tag": "block",
+            "protocol": "blackhole"
+        }
+    ]
+}
